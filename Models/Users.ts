@@ -7,6 +7,7 @@ interface User extends mongoose.Document {
   lastName?: string;
   referrals: mongoose.Types.ObjectId[];
   rank: mongoose.Types.ObjectId;
+  parentReferral?: mongoose.Types.ObjectId;
   score: number;
   maxScore: number;
   storedScore: number;
@@ -29,6 +30,11 @@ const userSchema = new Schema<User>({
       ref: "Users",
     },
   ],
+  parentReferral: {
+    type: mongoose.Types.ObjectId,
+    ref: "Users",
+    default: null
+  },
   score: {
     type: Number,
     default: 0,

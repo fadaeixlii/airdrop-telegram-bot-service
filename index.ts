@@ -17,9 +17,9 @@ app.use(json());
 
 app.use(claimRoute);
 
-app.listen(process.env.PORT ?? "7001", async () => {
+app.listen(process.env.PORT ?? "7002", async () => {
   await connectToDb();
-  console.log(`Server is running on port ${process.env.PORT ?? "7001"}`);
+  console.log(`Server is running on port ${process.env.PORT ?? "7002"}`);
 });
 
 cron.schedule(process.env.CRON_SCHEDULE ?? "*/10 * * * * *", async () => {
