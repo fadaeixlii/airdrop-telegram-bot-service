@@ -1,5 +1,5 @@
-const ton = require("@ton/ton");
-const tonCore = require("@ton/crypto");
+import ton  from "@ton/ton"
+import tonCore from "@ton/crypto"
 
 
 export class createWallet {
@@ -9,7 +9,7 @@ export class createWallet {
         apiKey: "c0591dd9646e08af79712cb58a3ee34a842835f3e174eea22f194946205c5ad8"
     });
 
-    public async createNewWallet(userId:String) {
+    public async createNewWallet(userId:string) {
         let password= generateStrongPassword(8,userId);
         let mnemonic = await tonCore.mnemonicNew(12, password);
         let keyPair = await tonCore.mnemonicToPrivateKey(mnemonic, password);
@@ -21,14 +21,14 @@ export class createWallet {
         };
     }
 
-    public async getBalance(mne: String[], pass: String) {
+    public async getBalance(mne: string[], pass: string) {
         let keyPair =  await tonCore.mnemonicToPrivateKey(mne, pass)
         let contract = ton.WalletContractV4.create({publicKey:keyPair.publicKey, workchain: 0})
         let wallet = this.client.open(contract)
         return ton.fromNano(wallet.getBalance)
     }
 
-    public async getTransactionUserIncome(lastHashTL:String,mne:String[],pass:String){
+    public async getTransactionUserIncome(lastHashTL:string,mne:string[],pass:string){
 
         let keyPair =  await tonCore.mnemonicToPrivateKey(mne, pass)
         let contract = ton.WalletContractV4.create({publicKey:keyPair.publicKey, workchain: 0})
@@ -59,7 +59,7 @@ export class createWallet {
         return resultTransaction;
     }
 
-    public async getTransactionUserOutcome(lastHashTL:String,mne:String[],pass:String){
+    public async getTransactionUserOutcome(lastHashTL:string,mne:string[],pass:string){
         let keyPair =  await tonCore.mnemonicToPrivateKey(mne, pass)
         let contract = ton.WalletContractV4.create({publicKey:keyPair.publicKey, workchain: 0})
         let wallet = this.client.open(contract)
@@ -100,6 +100,6 @@ function generateStrongPassword(length,str) {
     }
     return password;
 }
-function convertUTF8(str:String){
+function convertUTF8(str:string){
     return  Buffer.from(str, 'hex').toString('utf8')
 }
