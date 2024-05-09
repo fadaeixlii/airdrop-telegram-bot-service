@@ -18,7 +18,8 @@ export const claimRoute = router.post("/claim", async (req, res) => {
     // Check if last claim was made more than 10 minutes ago
     if (
       user.lastClaimTimestamp &&
-      Date.now() - user.lastClaimTimestamp.getTime() < 10 * 60 * 1000
+      Date.now() - user.lastClaimTimestamp.getTime() <
+        user.timeLimit * 60 * 1000
     ) {
       return res.status(403).json({
         success: false,
