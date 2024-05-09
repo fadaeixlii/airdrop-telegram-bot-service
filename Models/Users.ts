@@ -1,6 +1,6 @@
 import mongoose, { Schema } from "mongoose";
 
-interface User extends mongoose.Document {
+export interface User extends mongoose.Document {
   telegramId: number;
   username?: string;
   firstName?: string;
@@ -12,6 +12,8 @@ interface User extends mongoose.Document {
   maxScore: number;
   storedScore: number;
   referralCode?: string;
+  lastClaimTimestamp?: Date;
+  timeLimit: number;
 }
 
 const userSchema = new Schema<User>({
@@ -33,7 +35,7 @@ const userSchema = new Schema<User>({
   parentReferral: {
     type: mongoose.Types.ObjectId,
     ref: "Users",
-    default: null
+    default: null,
   },
   score: {
     type: Number,
@@ -50,6 +52,11 @@ const userSchema = new Schema<User>({
   rank: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Ranks",
+  },
+  lastClaimTimestamp: Date,
+  timeLimit: {
+    type: Number,
+    default: 10, // Default time limit in minutes
   },
 });
 
