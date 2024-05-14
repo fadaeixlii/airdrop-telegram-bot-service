@@ -49,6 +49,7 @@ export const claimRoute = router.post("/claim", async (req, res) => {
       robotTimeRemain: user.robotTimeRemain - numClaims, // Ensure non-negative value
     });
 
+    // add new timestamp
     res.status(200).json({ success: true, newStoredScore });
   } catch (error) {
     console.error("Error processing claim:", error);

@@ -76,7 +76,7 @@ const userSchema = new Schema<User>({
   },
   userTimeLimitPrice: {
     type: Number,
-    default: Number(process.env.USER_TIME_LIMIT_PRICE_DEFAULT) ?? 100,
+    default: Number(process.env.USER_TIME_LIMIT_PRICE_DEFAULT) ?? 10,
   },
 });
 

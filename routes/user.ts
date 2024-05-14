@@ -5,6 +5,18 @@ import Robots from "../Models/Robots";
 
 const router = express.Router();
 
+// referral
+
+// states
+// count of total users
+// count of mine token
+// every user claim add to total token mine
+// daily users
+// cron 24h cache
+// gamee
+// doge total supply
+// 30%
+
 export const userInfoRoute = router.get("/user/:userId", async (req, res) => {
   const userId = req.params.userId;
 
@@ -18,7 +30,9 @@ export const userInfoRoute = router.get("/user/:userId", async (req, res) => {
     }
 
     const userInfoAndScore: UserInfoAndScore = getUserInfoAndScore(user);
-
+    // add boost data
+    // add boost max or not
+    // add timestamp
     const userData: Partial<User> = {
       telegramId: user.telegramId,
       username: user.username,
@@ -91,6 +105,8 @@ export const purchaseBoostRoute = router.post(
 
       let boostPrice = 0;
       let boostEffect = 0;
+
+      // have threshold for max boost
       if (boostType === "maxScore") {
         boostPrice = user.userMaxScorePrice;
         boostEffect = Number(process.env.MAX_SCORE_BOOST_EFFECT) ?? 5; // Increase maxScore by 5
