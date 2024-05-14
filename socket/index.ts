@@ -1,7 +1,7 @@
 import Socket from "socket.io";
 import http from "http";
 import Users from "../Models/Users";
-
+// dont use
 export const RunSocket = (
   server: http.Server<typeof http.IncomingMessage, typeof http.ServerResponse>
 ) => {

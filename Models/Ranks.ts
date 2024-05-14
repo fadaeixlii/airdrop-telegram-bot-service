@@ -4,7 +4,6 @@ export interface IRanks extends mongoose.Document {
   name: string;
   minScore: number;
   maxScore: number;
-
   reward: mongoose.Types.ObjectId;
 }
 export const ranksSchema = new mongoose.Schema<IRanks>({

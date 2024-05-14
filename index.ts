@@ -2,7 +2,11 @@ import express from "express";
 import { json } from "body-parser";
 import { connectToDb } from "./utils/connectToDB";
 import { claimRoute } from "./routes/claim";
-import { userInfoRoute } from "./routes/user";
+import {
+  purchaseBoostRoute,
+  purchaseRobotRoute,
+  userInfoRoute,
+} from "./routes/user";
 import cron from "node-cron";
 import Users from "./Models/Users";
 import dotenv from "dotenv";
@@ -17,6 +21,8 @@ app.use(json());
 
 app.use(claimRoute);
 app.use(userInfoRoute);
+app.use(purchaseRobotRoute);
+app.use(purchaseBoostRoute);
 
 app.listen(process.env.PORT ?? "7002", async () => {
   await connectToDb();
