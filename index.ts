@@ -1,7 +1,9 @@
-import express from "express";
+import express, { Request, Response, NextFunction } from "express";
 import { json } from "body-parser";
 import { connectToDb } from "./utils/connectToDB";
 import { claimRoute } from "./routes/claim";
+import ResponseHandler from "./routes/ResponseHandler";
+
 import {
   purchaseBoostRoute,
   purchaseRobotRoute,
@@ -13,12 +15,15 @@ import dotenv from "dotenv";
 
 dotenv.config();
 import "./telegramBot/index";
+
 const app = express();
 // const server = http.createServer(app);
 
 app.use(json());
 // RunSocket(server);
 
+
+app.use(ResponseHandler);
 app.use(claimRoute);
 app.use(userInfoRoute);
 app.use(purchaseRobotRoute);

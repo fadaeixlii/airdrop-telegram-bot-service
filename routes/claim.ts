@@ -1,7 +1,18 @@
 import express from "express";
 import Users from "../Models/Users";
+import { isMongoConnected } from "../utils/connectToDB";
 
 const router = express.Router();
+
+// Middleware specific to these routes
+router.use((req, res, next) => {
+  if (isMongoConnected())
+    next();
+  else {
+    res.sendError(405,"Something Bad Happended");
+    return;
+  }
+});
 
 export const claimRoute = router.post("/claim", async (req, res) => {
   const userId = req.body.userId;
@@ -10,30 +21,25 @@ export const claimRoute = router.post("/claim", async (req, res) => {
     const user = await Users.findById(userId);
 
     if (!user) {
-      return res
-        .status(404)
-        .json({ success: false, message: "User not found" });
+      return res.sendError(404,"User not found");
     }
     if (
       user.lastClaimTimestamp &&
       Date.now() - user.lastClaimTimestamp.getTime() <
-        user.timeLimit * 60 * 1000
+      user.timeLimit * 60 * 1000
     ) {
-      return res.status(403).json({
-        success: false,
-        message: `You can only claim once every ${user.timeLimit} minutes`,
-      });
+      return res.sendError(403,`You can only claim once every ${user.timeLimit} minutes`);
     }
 
     let numClaims = 1; // Default 1 claim
     if (
       user.lastClaimTimestamp &&
       Date.now() - user.lastClaimTimestamp.getTime() >
-        user.timeLimit * 60 * 1000
+      user.timeLimit * 60 * 1000
     ) {
       const elapsedMinutes = Math.floor(
         (Date.now() - user.lastClaimTimestamp.getTime()) /
-          (user.timeLimit * 60 * 1000)
+        (user.timeLimit * 60 * 1000)
       );
 
       numClaims =
@@ -49,9 +55,9 @@ export const claimRoute = router.post("/claim", async (req, res) => {
       robotTimeRemain: user.robotTimeRemain - numClaims, // Ensure non-negative value
     });
 
-    res.status(200).json({ success: true, newStoredScore });
+    res.sendSuccess(200,"Claim Successfull", {"newStoredScore": newStoredScore});
   } catch (error) {
     console.error("Error processing claim:", error);
-    res.status(500).json({ success: false, message: "Internal server error" });
+    res.sendError(500, "Internal server error");
   }
 });
