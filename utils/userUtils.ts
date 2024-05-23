@@ -1,4 +1,5 @@
 import Users, { User } from "../Models/Users";
+import { Ranks } from "../Models/Ranks";
 
 export interface UserInfoAndScore {
   score: number;
@@ -89,7 +90,7 @@ export function getUserInfoAndScore(user: User): UserInfoAndScore {
   const timeDifference =
     (now.getTime() - lastClaimTime.getTime()) / (1000 * 60); // Difference in minutes
 
-  let currentScore = user.score;
+  let currentScore = user.storedScore;
   if (timeDifference <= user.timeLimit) {
     // Calculate score based on time difference and max score
     currentScore = Math.floor(
@@ -101,4 +102,17 @@ export function getUserInfoAndScore(user: User): UserInfoAndScore {
   }
 
   return { score: currentScore, maxScore: user.maxScore };
+}
+
+export async function giveRankReward(storedScore: number): Promise<[number, number] | null> {
+  const ranks = await Ranks.find({});
+  
+  for (const itRank of ranks) {
+    if (storedScore >= itRank.minScore && storedScore < itRank.maxScore) {
+      return [storedScore + itRank.reward, itRank.maxScore];
+    }
+  }
+  
+  // If no rank matches the storedScore, return null or handle it accordingly
+  return null;
 }

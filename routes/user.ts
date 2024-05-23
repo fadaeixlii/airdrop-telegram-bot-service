@@ -35,11 +35,11 @@ export const userInfoRoute = router.get("/user/:userId", async (req, res) => {
       lastName: user.lastName,
       referralCode: user.referralCode,
       rank: user.rank,
-      score: userInfoAndScore.score,
+      storedScore: userInfoAndScore.score,
       maxScore: userInfoAndScore.maxScore,
     };
 
-    res.sendSuccess(200, JSON.stringify({"user": userData}))
+    res.sendSuccess(200,"User Info Successfully fetched", userData)
   } catch (error) {
     console.error("Error fetching user score:", error);
     res.sendError(500, "Internal server error")
@@ -92,11 +92,15 @@ export const purchaseBoostRoute = router.post(
       let boostPrice = 0;
       let boostEffect = 0;
       if (boostType === "maxScore") {
+        if(user.maxScoreMaxBoostCount <= 0) return res.sendError(401, "You Have Reached Maximum");
+        user.maxScoreMaxBoostCount--;
         boostPrice = user.userMaxScorePrice;
         boostEffect = Number(process.env.MAX_SCORE_BOOST_EFFECT) ?? 5; // Increase maxScore by 5
         user.userMaxScorePrice *=
           Number(process.env.USER_MAX_SCORE_PRICE_COEFFICIENT) ?? 1.1; // Increase boost price for next purchase
       } else if (boostType === "timeLimit") {
+        if(user.timeLimitMaxBoostCount <= 0) return res.sendError(401, "You Have Reached Maximum");
+        user.timeLimitMaxBoostCount--;
         boostPrice = user.userTimeLimitPrice;
         boostEffect = Number(process.env.TIME_LIMIT_BOOST_EFFECT) ?? -0.25; // Decrease timeLimit by 0.25
         user.userTimeLimitPrice *=

@@ -1,5 +1,10 @@
 import mongoose, { Schema } from "mongoose";
 
+const defaultNumber = (envVar: string, defaultValue: number): number => {
+  const value = Number(process.env[envVar]);
+  return isNaN(value) ? defaultValue : value;
+}
+
 export interface User extends mongoose.Document {
   telegramId: number;
   username?: string;
@@ -11,13 +16,15 @@ export interface User extends mongoose.Document {
   rank: mongoose.Types.ObjectId;
   robot: mongoose.Types.ObjectId;
   parentReferral?: mongoose.Types.ObjectId;
-  score: number;
   maxScore: number;
   robotTimeRemain: number;
   storedScore: number;
   referralCode?: string;
   lastClaimTimestamp?: Date;
   timeLimit: number;
+  nextRankScore: number;
+  maxScoreMaxBoostCount: number;
+  timeLimitMaxBoostCount: number;
 }
 
 const userSchema = new Schema<User>({
@@ -41,13 +48,9 @@ const userSchema = new Schema<User>({
     ref: "Users",
     default: null,
   },
-  score: {
-    type: Number,
-    default: 0,
-  },
   maxScore: {
     type: Number,
-    default: Number(process.env.MAX_SCORE_DEFAULT) ?? 100,
+    default: defaultNumber('MAX_SCORE_DEFAULT', 100),
   },
   storedScore: {
     type: Number,
@@ -68,15 +71,27 @@ const userSchema = new Schema<User>({
   lastClaimTimestamp: Date,
   timeLimit: {
     type: Number,
-    default: Number(process.env.TIME_LIMIT_DEFAULT) ?? 10,
+    default: defaultNumber('TIME_LIMIT_DEFAULT', 10),
   },
   userMaxScorePrice: {
     type: Number,
-    default: Number(process.env.USER_MAX_SCORE_PRICE_DEFAULT) ?? 100,
+    default: defaultNumber('USER_MAX_SCORE_PRICE_DEFAULT', 100),
   },
   userTimeLimitPrice: {
     type: Number,
-    default: Number(process.env.USER_TIME_LIMIT_PRICE_DEFAULT) ?? 100,
+    default: defaultNumber('USER_TIME_LIMIT_PRICE_DEFAULT', 100),
+  },
+  maxScoreMaxBoostCount: {
+    type: Number,
+    default: defaultNumber('APP_MAX_SCORE_MAX_BOOST_COUNT', 20),
+  },
+  timeLimitMaxBoostCount: {
+    type: Number,
+    default: defaultNumber('APP_TIME_LIMIT_MAX_BOOST_COUNT', 20),
+  },
+  nextRankScore: {
+    type: Number,
+    default: 100,
   },
 });
 

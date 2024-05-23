@@ -15,6 +15,7 @@ import dotenv from "dotenv";
 
 dotenv.config();
 import "./telegramBot/index";
+import { rankRoute } from "./routes/rank";
 
 const app = express();
 // const server = http.createServer(app);
@@ -25,6 +26,7 @@ app.use(json());
 
 app.use(ResponseHandler);
 app.use(claimRoute);
+app.use(rankRoute);
 app.use(userInfoRoute);
 app.use(purchaseRobotRoute);
 app.use(purchaseBoostRoute);

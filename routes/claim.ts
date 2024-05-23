@@ -1,6 +1,7 @@
 import express from "express";
 import Users from "../Models/Users";
 import { isMongoConnected } from "../utils/connectToDB";
+import { giveRankReward } from "../utils/userUtils";
 
 const router = express.Router();
 
@@ -42,18 +43,40 @@ export const claimRoute = router.post("/claim", async (req, res) => {
         (user.timeLimit * 60 * 1000)
       );
 
-      numClaims =
-        Math.min(user.robotTimeRemain, Math.floor(elapsedMinutes)) - 1;
+      numClaims = Math.min(user.robotTimeRemain, Math.floor(elapsedMinutes));
     }
 
-    const { storedScore, maxScore } = user;
-    const newStoredScore = storedScore + numClaims * maxScore;
+    if(user.robotTimeRemain > 0) numClaims++;
 
+    const { storedScore, maxScore } = user;
+    let newStoredScore = storedScore + (numClaims) * maxScore;
+    let newNextRankScore = user.nextRankScore;
+
+    const result = await giveRankReward(newStoredScore);
+
+    if(result) {
+        newStoredScore = result[0];
+        newNextRankScore = result[1];
+    }
+
+    let robotRemain = 0;
+    if(user.robotTimeRemain > 0) {
+      robotRemain = user.robotTimeRemain - (numClaims-1)
+    }
     await user.updateOne({
       storedScore: newStoredScore,
+      nextRankScore: newNextRankScore,
       lastClaimTimestamp: new Date(),
-      robotTimeRemain: user.robotTimeRemain - numClaims, // Ensure non-negative value
+      robotTimeRemain: robotRemain, // Ensure non-negative value
     });
+
+    const parentRef= user.parentReferral
+    if(parentRef) {
+      const parentUser = await Users.findById(parentRef);
+      if(parentUser)
+        parentUser.storedScore += (numClaims) * maxScore * 0.2;
+        parentUser?.save()
+    }
 
     res.sendSuccess(200,"Claim Successfull", {"newStoredScore": newStoredScore});
   } catch (error) {
