@@ -7,37 +7,45 @@ import {
   provideReferralRewards,
   trackReferral,
 } from "../utils/userUtils";
+import UserState from "../Models/UserState";
 const bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN ?? "", {
   polling: true,
 });
 
 bot.onText(/\/invite/, async (msg) => {
   const userId = msg?.from?.id;
-  if(userId == null) return;
+  if (userId == null) return;
   const referralCode = `r_${userId}`;
   //generateReferralCode(String(userId)); // Implement this function to generate a unique code
-  
+
   let user = await Users.findOne({ telegramId: userId });
 
   if (!user) {
     user = new Users({ telegramId: userId, referralCode });
     await user.save();
   } else if (user.referralCode == null || user.referralCode == undefined) {
-    user = await Users.findOneAndUpdate({ telegramId: userId }, { referralCode });
+    user = await Users.findOneAndUpdate(
+      { telegramId: userId },
+      { referralCode }
+    );
   }
 
   var iKeys = [];
-  iKeys.push([{
-    text: "Share",
-    switch_inline_query: `Invite your friends and get bonuses for each invited friend!🎁\nYour referral link: https://t.me/DemoAirDropMegaWallet1_bot?start=${user?.referralCode}`
-  }]);
-  bot.sendMessage(msg.chat.id, `\nInvite your friends and get bonuses for each invited friend!🎁\n\nYour referral link: <code>https://t.me/DemoAirDropMegaWallet1_bot?start=${user?.referralCode}</code>`, {parse_mode: 'HTML', reply_markup: {inline_keyboard: iKeys}});
+  iKeys.push([
+    {
+      text: "Share",
+      switch_inline_query: `Invite your friends and get bonuses for each invited friend!🎁\nYour referral link: https://t.me/DemoAirDropMegaWallet1_bot?start=${user?.referralCode}`,
+    },
+  ]);
+  bot.sendMessage(
+    msg.chat.id,
+    `\nInvite your friends and get bonuses for each invited friend!🎁\n\nYour referral link: <code>https://t.me/DemoAirDropMegaWallet1_bot?start=${user?.referralCode}</code>`,
+    { parse_mode: "HTML", reply_markup: { inline_keyboard: iKeys } }
+  );
 });
 
-bot.onText(/\/start/, async (msg) => { });
 bot.onText(/\/start(?:\s(.*))?/, async (msg, match) => {
   await connectToDb();
-
 
   const referralLink = match ? match[1] : null; // Extract referral code from the command if provided
   const newUserTelegramId = msg.chat?.id;
@@ -65,7 +73,6 @@ bot.onText(/\/start(?:\s(.*))?/, async (msg, match) => {
       referralCode: newRefCode,
     });
 
-
     if (referralLink) {
       const referringUser = await Users.findOne({ referralCode: referralLink });
       if (referringUser) {
@@ -77,9 +84,19 @@ bot.onText(/\/start(?:\s(.*))?/, async (msg, match) => {
     }
   }
 
-  bot.sendMessage(msg.chat.id, `Hello ${msg.from?.username}👋\n\n This is DEMO_WALLET\n\nTap And earn Coin.A little bit later you will be very surprised.\n\nGot friends? Invite them to the game. That’s the way you'll both earn even more coins together.\n\nThat’s all you need to know to get started.`);
+  const userState = await UserState.findOne({});
+  if (userState) {
+    userState.userCount += 1;
+    userState.newUsersIn24h += 1;
+    await userState.save();
+  } else {
+    await UserState.create({ totalScore: 0, userCount: 1, newUsersIn24h: 1 });
+  }
 
-
+  bot.sendMessage(
+    msg.chat.id,
+    `Hello ${msg.from?.username}👋\n\n This is DEMO_WALLET\n\nTap And earn Coin.A little bit later you will be very surprised.\n\nGot friends? Invite them to the game. That’s the way you'll both earn even more coins together.\n\nThat’s all you need to know to get started.`
+  );
 });
 
 // Start the bot

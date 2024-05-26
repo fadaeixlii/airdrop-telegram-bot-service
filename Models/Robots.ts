@@ -1,12 +1,12 @@
 import mongoose, { Schema } from "mongoose";
 
-export interface Robot extends mongoose.Document {
+export interface IRobot extends mongoose.Document {
   name: string;
   claimCount: number;
   price: number;
 }
 
-const robotSchema = new Schema<Robot>({
+const robotSchema = new Schema<IRobot>({
   name: {
     type: String,
     required: true,
@@ -22,5 +22,5 @@ const robotSchema = new Schema<Robot>({
   },
 });
 
-const Robots = mongoose.model<Robot>("Robots", robotSchema);
+const Robots = mongoose.model<IRobot>("Robots", robotSchema);
 export default Robots;
