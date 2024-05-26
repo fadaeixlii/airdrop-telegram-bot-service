@@ -1,27 +1,62 @@
 import express from "express";
-import Users, { User } from "./../Models/Users";
-import { UserInfoAndScore, getUserInfoAndScore } from "../utils/userUtils";
-import Robots from "../Models/Robots";
+import Users, { IUser } from "./../Models/Users";
+import Robots, { IRobot } from "../Models/Robots";
+import { isMongoConnected } from "../utils/connectToDB";
+import { IRanks } from "../Models/Ranks";
 
 const router = express.Router();
 
-// referral
+// Middleware specific to these routes
+router.use((req, res, next) => {
+  if (isMongoConnected()) next();
+  else {
+    res.sendError(405, "Something Bad Happended");
+    return;
+  }
+});
 
-// states
-// count of total users
-// count of mine token
-// every user claim add to total token mine
-// daily users
-// cron 24h cache
-// gamee
-// doge total supply
-// 30%
+export const getUserId = router.get(
+  "/user/telegram/:telegramId",
+  async (req, res) => {
+    const telegramId = parseInt(req.params.telegramId, 10);
+
+    if (isNaN(telegramId)) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid telegramId" });
+    }
+
+    try {
+      const user = await Users.findOne({ telegramId });
+
+      if (!user) {
+        return res
+          .status(404)
+          .json({ success: false, message: "User not found" });
+      }
+
+      res.status(200).json({
+        success: true,
+        data: { userId: user._id, telegramId: user.telegramId },
+      });
+    } catch (error) {
+      console.error("Error fetching user by telegramId:", error);
+      res
+        .status(500)
+        .json({ success: false, message: "Internal server error" });
+    }
+  }
+);
 
 export const userInfoRoute = router.get("/user/:userId", async (req, res) => {
   const userId = req.params.userId;
 
   try {
-    const user = await Users.findById(userId);
+    const user = await Users.findById(userId)
+      .populate<{ rank: IRanks }>("rank")
+      .populate<{ referrals: IUser[] }>("referrals")
+      .populate<{ parentReferral: IUser }>("parentReferral")
+      .populate<{ robot: IRobot }>("robot");
 
     if (!user) {
       return res
@@ -29,22 +64,33 @@ export const userInfoRoute = router.get("/user/:userId", async (req, res) => {
         .json({ success: false, message: "User not found" });
     }
 
-    const userInfoAndScore: UserInfoAndScore = getUserInfoAndScore(user);
-    // add boost data
-    // add boost max or not
-    // add timestamp
-    const userData: Partial<User> = {
+    const userData = {
       telegramId: user.telegramId,
       username: user.username,
       firstName: user.firstName,
       lastName: user.lastName,
       referralCode: user.referralCode,
       rank: user.rank,
-      score: userInfoAndScore.score,
-      maxScore: userInfoAndScore.maxScore,
+      storedScore: user.storedScore,
+      maxScore: user.maxScore,
+      referrals: user.referrals,
+      parentReferral: user.parentReferral,
+      robot: user.robot,
+      robotTimeRemain: user.robotTimeRemain,
+      lastClaimTimestamp: user.lastClaimTimestamp,
+      timeLimit: user.timeLimit,
+      userMaxScorePrice: user.userMaxScorePrice,
+      userTimeLimitPrice: user.userTimeLimitPrice,
+      maxScoreMaxBoostCount: user.maxScoreMaxBoostCount,
+      timeLimitMaxBoostCount: user.timeLimitMaxBoostCount,
+      nextRankScore: user.nextRankScore,
     };
 
-    res.status(200).json({ success: true, user: userData });
+    res.status(200).json({
+      success: true,
+      message: "User Info Successfully fetched",
+      data: userData,
+    });
   } catch (error) {
     console.error("Error fetching user score:", error);
     res.status(500).json({ success: false, message: "Internal server error" });
@@ -62,15 +108,11 @@ export const purchaseRobotRoute = router.post(
       const robot = await Robots.findById(robotId);
 
       if (!user || !robot) {
-        return res
-          .status(404)
-          .json({ success: false, message: "User or robot not found" });
+        return res.sendError(404, "User or robot not found");
       }
 
       if (user.storedScore < robot.price) {
-        return res
-          .status(400)
-          .json({ success: false, message: "Insufficient stored score" });
+        return res.sendError(404, "Insufficient stored score");
       }
 
       await user.updateOne({
@@ -78,14 +120,10 @@ export const purchaseRobotRoute = router.post(
         robotTimeRemain: user.robotTimeRemain + robot.claimCount,
       });
 
-      res
-        .status(200)
-        .json({ success: true, message: "Robot purchased successfully" });
+      res.sendSuccess(200, "Robot purchased successfully");
     } catch (error) {
       console.error("Error purchasing robot:", error);
-      res
-        .status(500)
-        .json({ success: false, message: "Internal server error" });
+      res.sendError(505, "Internal server error");
     }
   }
 );
@@ -98,9 +136,7 @@ export const purchaseBoostRoute = router.post(
     try {
       const user = await Users.findById(userId);
       if (!user) {
-        return res
-          .status(404)
-          .json({ success: false, message: "User not found" });
+        return res.sendError(404, "User not found");
       }
 
       let boostPrice = 0;
@@ -108,25 +144,27 @@ export const purchaseBoostRoute = router.post(
 
       // have threshold for max boost
       if (boostType === "maxScore") {
+        if (user.maxScoreMaxBoostCount <= 0)
+          return res.sendError(401, "You Have Reached Maximum");
+        user.maxScoreMaxBoostCount--;
         boostPrice = user.userMaxScorePrice;
         boostEffect = Number(process.env.MAX_SCORE_BOOST_EFFECT) ?? 5; // Increase maxScore by 5
         user.userMaxScorePrice *=
           Number(process.env.USER_MAX_SCORE_PRICE_COEFFICIENT) ?? 1.1; // Increase boost price for next purchase
       } else if (boostType === "timeLimit") {
+        if (user.timeLimitMaxBoostCount <= 0)
+          return res.sendError(401, "You Have Reached Maximum");
+        user.timeLimitMaxBoostCount--;
         boostPrice = user.userTimeLimitPrice;
         boostEffect = Number(process.env.TIME_LIMIT_BOOST_EFFECT) ?? -0.25; // Decrease timeLimit by 0.25
         user.userTimeLimitPrice *=
           Number(process.env.USER_MAX_SCORE_PRICE_COEFFICIENT) ?? 1.1; // Increase boost price for next purchase
       } else {
-        return res
-          .status(400)
-          .json({ success: false, message: "Invalid boost type" });
+        return res.sendError(400, "Invalid boost type");
       }
 
       if (user.storedScore < boostPrice) {
-        return res
-          .status(403)
-          .json({ success: false, message: "Insufficient stored score" });
+        return res.sendError(403, "Insufficient stored score");
       }
 
       user.storedScore -= boostPrice;
@@ -139,12 +177,11 @@ export const purchaseBoostRoute = router.post(
 
       await user.save();
 
-      res.status(200).json({ success: true, user });
+      res.sendSuccess(200, "Purchase Boost Completed");
+      // res.status(200).json({ success: true, user });
     } catch (error) {
       console.error("Error purchasing boost:", error);
-      res
-        .status(500)
-        .json({ success: false, message: "Internal server error" });
+      res.sendError(500, "Internal server error");
     }
   }
 );

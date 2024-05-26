@@ -7,6 +7,7 @@ import {
   provideReferralRewards,
   trackReferral,
 } from "../utils/userUtils";
+import UserState from "../Models/UserState";
 const bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN ?? "", {
   polling: true,
 });
@@ -81,6 +82,15 @@ bot.onText(/\/start(?:\s(.*))?/, async (msg, match) => {
         await provideReferralRewards(referringUser._id);
       }
     }
+  }
+
+  const userState = await UserState.findOne({});
+  if (userState) {
+    userState.userCount += 1;
+    userState.newUsersIn24h += 1;
+    await userState.save();
+  } else {
+    await UserState.create({ totalScore: 0, userCount: 1, newUsersIn24h: 1 });
   }
 
   bot.sendMessage(

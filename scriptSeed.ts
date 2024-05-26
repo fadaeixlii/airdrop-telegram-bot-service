@@ -12,9 +12,9 @@ const rewardsData = [
 
 // Define ranks data
 const ranksData = [
-  { name: "Bronze", minScore: 0, maxScore: 100 },
-  { name: "Silver", minScore: 101, maxScore: 200 },
-  { name: "Gold", minScore: 201, maxScore: Infinity }, // Adjust maxScore as needed
+  { name: "Bronze", minScore: 0, maxScore: 100 ,reward: 10 },
+  { name: "Silver", minScore: 101, maxScore: 200,reward: 20 },
+  { name: "Gold", minScore: 201, maxScore: Infinity,reward: 30 }, // Adjust maxScore as needed
 ];
 
 // Connect to MongoDB
@@ -27,18 +27,20 @@ const main = async () => {
   await Rewards.insertMany(rewardsData);
   console.log("Rewards seeded successfully");
 
+  Ranks.insertMany(ranksData);
   // Retrieve reward IDs
-  const rewards = await Rewards.find();
-  const rewardIds = rewards.map((reward) => reward._id);
+  // const rewards = await Rewards.find();
+  // const rewardIds = rewards.map((reward) => reward._id);
 
   // Assign rewards to ranks
-  ranksData.forEach(async (rankData, index) => {
+  /* ranksData.forEach(async (rankData, index) => {
     const rank = await Ranks.create({
       ...rankData,
       reward: rewardIds[index], // Assign reward to each rank
     });
     console.log(`Rank ${rank.name} seeded successfully`);
-  });
+  }); */
+
 
   console.log("All data seeded successfully");
 };

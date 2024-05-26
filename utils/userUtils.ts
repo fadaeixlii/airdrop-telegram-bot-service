@@ -1,4 +1,5 @@
-import Users, { User } from "../Models/Users";
+import Users, { IUser } from "../Models/Users";
+import { Ranks } from "../Models/Ranks";
 
 export interface UserInfoAndScore {
   score: number;
@@ -83,22 +84,17 @@ export const provideReferralRewards = async (
   }
 };
 
-export function getUserInfoAndScore(user: User): UserInfoAndScore {
-  const now = new Date();
-  const lastClaimTime = user.lastClaimTimestamp || now;
-  const timeDifference =
-    (now.getTime() - lastClaimTime.getTime()) / (1000 * 60); // Difference in minutes
+export async function giveRankReward(
+  storedScore: number
+): Promise<[number, number] | null> {
+  const ranks = await Ranks.find({});
 
-  let currentScore = user.score;
-  if (timeDifference <= user.timeLimit) {
-    // Calculate score based on time difference and max score
-    currentScore = Math.floor(
-      (timeDifference / user.timeLimit) * user.maxScore
-    );
-  } else {
-    // If time limit exceeded, set current score to max score
-    currentScore = user.maxScore;
+  for (const itRank of ranks) {
+    if (storedScore >= itRank.minScore && storedScore < itRank.maxScore) {
+      return [storedScore + itRank.reward, itRank.maxScore];
+    }
   }
 
-  return { score: currentScore, maxScore: user.maxScore };
+  // If no rank matches the storedScore, return null or handle it accordingly
+  return null;
 }

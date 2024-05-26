@@ -19,7 +19,7 @@ export const RunSocket = (
       )
         .then((user) => {
           if (user) {
-            socket.emit("newScore", user.score);
+            socket.emit("newScore", user.storedScore);
           }
         })
         .catch((error) => {
