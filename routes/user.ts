@@ -27,7 +27,7 @@ export const getUserId = router.get(
     }
 
     try {
-      const user = await Users.findOne({ telegramId });
+      const user = await Users.findOne({ telegramId: +req.params.telegramId });
 
       if (!user) {
         return res
