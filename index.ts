@@ -3,7 +3,7 @@ import { json } from "body-parser";
 import { connectToDb } from "./utils/connectToDB";
 import { claimRoute } from "./routes/claim";
 import ResponseHandler from "./routes/ResponseHandler";
-
+import cors from "cors";
 import {
   getUserId,
   purchaseBoostRoute,
@@ -21,7 +21,7 @@ import UserState from "./Models/UserState";
 
 const app = express();
 // const server = http.createServer(app);
-
+app.use(cors());
 app.use(json());
 // RunSocket(server);
 

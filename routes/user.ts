@@ -64,6 +64,12 @@ export const userInfoRoute = router.get("/user/:userId", async (req, res) => {
         .json({ success: false, message: "User not found" });
     }
 
+    const NowDate = new Date();
+    const canClaim = !(
+      user.lastClaimTimestamp &&
+      NowDate.getTime() - user.lastClaimTimestamp.getTime() <
+        user.timeLimit * 60 * 1000
+    );
     const userData = {
       telegramId: user.telegramId,
       username: user.username,
@@ -77,13 +83,14 @@ export const userInfoRoute = router.get("/user/:userId", async (req, res) => {
       parentReferral: user.parentReferral,
       robot: user.robot,
       robotTimeRemain: user.robotTimeRemain,
-      lastClaimTimestamp: user.lastClaimTimestamp,
+      lastClaimTimestamp: user?.lastClaimTimestamp ?? null,
       timeLimit: user.timeLimit,
       userMaxScorePrice: user.userMaxScorePrice,
       userTimeLimitPrice: user.userTimeLimitPrice,
       maxScoreMaxBoostCount: user.maxScoreMaxBoostCount,
       timeLimitMaxBoostCount: user.timeLimitMaxBoostCount,
       nextRankScore: user.nextRankScore,
+      canClaim,
     };
 
     res.status(200).json({

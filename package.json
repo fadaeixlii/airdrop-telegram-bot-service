@@ -19,9 +19,13 @@
     "typescript": "^5.4.5"
   },
   "dependencies": {
+    "@ton/core": "^0.56.3",
+    "@ton/crypto": "^3.2.0",
+    "@ton/ton": "^13.11.1",
     "@types/node-telegram-bot-api": "^0.64.6",
     "bip39": "^3.1.0",
     "body-parser": "^1.20.2",
+    "cors": "^2.8.5",
     "cron": "^3.1.7",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
@@ -29,9 +33,6 @@
     "mongoose": "^8.3.2",
     "node-cron": "^3.0.3",
     "node-telegram-bot-api": "^0.65.1",
-    "socket.io": "^4.7.5",
-    "@ton/core": "^0.56.3",
-    "@ton/crypto": "^3.2.0",
-    "@ton/ton": "^13.11.1"
+    "socket.io": "^4.7.5"
   }
 }

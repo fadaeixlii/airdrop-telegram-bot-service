@@ -46,7 +46,10 @@ export const claimRoute = router.post("/claim", async (req, res) => {
           (user.timeLimit * 60 * 1000)
       );
 
-      numClaims = Math.min(user.robotTimeRemain, Math.floor(elapsedMinutes));
+      numClaims = Math.min(
+        user.robotTimeRemain + 1,
+        Math.floor(elapsedMinutes)
+      );
     }
 
     if (user.robotTimeRemain > 0) numClaims++;
@@ -54,6 +57,10 @@ export const claimRoute = router.post("/claim", async (req, res) => {
     const { storedScore, maxScore } = user;
     let newStoredScore = storedScore + numClaims * maxScore;
     let newNextRankScore = user.nextRankScore;
+    console.log("numClaims", numClaims);
+    console.log("newStoredScore", newStoredScore);
+    console.log("storedScore", storedScore);
+    console.log("maxScore", maxScore);
 
     const result = await giveRankReward(newStoredScore);
 
@@ -62,14 +69,20 @@ export const claimRoute = router.post("/claim", async (req, res) => {
       newNextRankScore = result[1];
     }
 
+    console.log("result", result);
+    console.log("newStoredScore", newStoredScore);
+    console.log("newNextRankScore", newNextRankScore);
+
     let robotRemain = 0;
     if (user.robotTimeRemain > 0) {
       robotRemain = user.robotTimeRemain - (numClaims - 1);
     }
+
+    const newClaimTime = new Date();
     await user.updateOne({
       storedScore: newStoredScore,
       nextRankScore: newNextRankScore,
-      lastClaimTimestamp: new Date(),
+      lastClaimTimestamp: newClaimTime,
       robotTimeRemain: robotRemain, // Ensure non-negative value
     });
 
@@ -94,6 +107,7 @@ export const claimRoute = router.post("/claim", async (req, res) => {
 
     res.sendSuccess(200, "Claim Successfull", {
       newStoredScore: newStoredScore,
+      lastClaimTimestamp: newClaimTime,
     });
   } catch (error) {
     console.error("Error processing claim:", error);
