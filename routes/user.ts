@@ -65,6 +65,16 @@ export const userInfoRoute = router.get("/user/:userId", async (req, res) => {
     }
 
     const NowDate = new Date();
+
+    if (user.profitPerHour > 0 && user.lastTimeCallApi) {
+      const elapsedTime =
+        (NowDate.getTime() - user.lastTimeCallApi.getTime()) / (1000 * 60 * 60); // elapsed time in hours
+      user.storedScore += user.profitPerHour * elapsedTime;
+    }
+
+    user.lastTimeCallApi = NowDate;
+    await user.save();
+
     const canClaim = !(
       user.lastClaimTimestamp &&
       NowDate.getTime() - user.lastClaimTimestamp.getTime() <
@@ -90,7 +100,9 @@ export const userInfoRoute = router.get("/user/:userId", async (req, res) => {
       maxScoreMaxBoostCount: user.maxScoreMaxBoostCount,
       timeLimitMaxBoostCount: user.timeLimitMaxBoostCount,
       nextRankScore: user.nextRankScore,
+      completedTasks: user.completedTasks,
       canClaim,
+      profitPerHour: user.profitPerHour,
     };
 
     res.status(200).json({
@@ -154,18 +166,27 @@ export const purchaseBoostRoute = router.post(
         if (user.maxScoreMaxBoostCount <= 0)
           return res.sendError(401, "You Have Reached Maximum");
         user.maxScoreMaxBoostCount--;
-        boostPrice = user.userMaxScorePrice;
+        boostPrice = parseInt(user.userMaxScorePrice.toFixed(0));
         boostEffect = Number(process.env.MAX_SCORE_BOOST_EFFECT) ?? 5; // Increase maxScore by 5
-        user.userMaxScorePrice *=
-          Number(process.env.USER_MAX_SCORE_PRICE_COEFFICIENT) ?? 1.1; // Increase boost price for next purchase
+        user.userMaxScorePrice = parseInt(
+          (
+            user.userMaxScorePrice *
+              Number(process.env.USER_MAX_SCORE_PRICE_COEFFICIENT) ?? 1.1
+          ).toFixed(0)
+        ); // Increase boost price for next purchase
       } else if (boostType === "timeLimit") {
         if (user.timeLimitMaxBoostCount <= 0)
           return res.sendError(401, "You Have Reached Maximum");
         user.timeLimitMaxBoostCount--;
-        boostPrice = user.userTimeLimitPrice;
-        boostEffect = Number(process.env.TIME_LIMIT_BOOST_EFFECT) ?? -0.25; // Decrease timeLimit by 0.25
-        user.userTimeLimitPrice *=
-          Number(process.env.USER_MAX_SCORE_PRICE_COEFFICIENT) ?? 1.1; // Increase boost price for next purchase
+
+        boostPrice = parseInt(user.userTimeLimitPrice.toFixed(0));
+        boostEffect = Number(process.env.TIME_LIMIT_BOOST_EFFECT) ?? -0.25; // Increase maxScore by 5
+        user.userTimeLimitPrice = parseInt(
+          (
+            user.userTimeLimitPrice *
+              Number(process.env.USER_TIME_LIMIT_PRICE_COEFFICIENT) ?? 1.1
+          ).toFixed(0)
+        );
       } else {
         return res.sendError(400, "Invalid boost type");
       }

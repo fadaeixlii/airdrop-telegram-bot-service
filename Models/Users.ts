@@ -25,6 +25,9 @@ export interface IUser extends mongoose.Document {
   nextRankScore: number;
   maxScoreMaxBoostCount: number;
   timeLimitMaxBoostCount: number;
+  completedTasks: mongoose.Types.ObjectId[];
+  profitPerHour: number;
+  lastTimeCallApi: Date;
 }
 
 const userSchema = new Schema<IUser>({
@@ -92,6 +95,15 @@ const userSchema = new Schema<IUser>({
   nextRankScore: {
     type: Number,
     default: 100,
+  },
+  completedTasks: [{ type: Schema.Types.ObjectId, ref: "Tasks" }],
+  profitPerHour: {
+    type: Number,
+    default: 0,
+  },
+  lastTimeCallApi: {
+    type: Date,
+    default: Date.now,
   },
 });
 

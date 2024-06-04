@@ -34,12 +34,12 @@ bot.onText(/\/invite/, async (msg) => {
   iKeys.push([
     {
       text: "Share",
-      switch_inline_query: `Invite your friends and get bonuses for each invited friend!🎁\nYour referral link: https://t.me/DemoAirDropMegaWallet1_bot?start=${user?.referralCode}`,
+      switch_inline_query: `Invite your friends and get bonuses for each invited friend!🎁\nYour referral link: t.me/DemoAirDropMegaWallet1_bot?start=${user?.referralCode}`,
     },
   ]);
   bot.sendMessage(
     msg.chat.id,
-    `\nInvite your friends and get bonuses for each invited friend!🎁\n\nYour referral link: <code>https://t.me/DemoAirDropMegaWallet1_bot?start=${user?.referralCode}</code>`,
+    `\nInvite your friends and get bonuses for each invited friend!🎁\n\nYour referral link: <code>t.me/DemoAirDropMegaWallet1_bot?start=${user?.referralCode}</code>`,
     { parse_mode: "HTML", reply_markup: { inline_keyboard: iKeys } }
   );
 });

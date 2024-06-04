@@ -11,7 +11,10 @@ export const connectToDb = async () => {
     return;
   } else {
     mongoose
-      .connect(process.env.MONGODB_URL_SERVER ?? "")
+      .connect(
+        process.env.MONGODB_URL_SERVER ??
+          "mongodb://userMega:USER)(Mega123!@107.189.16.134:27017/demo_airdrop"
+      )
       .then(() => {
         console.log("mangoDB Now connected");
       })
