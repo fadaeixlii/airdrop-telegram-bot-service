@@ -1,4 +1,5 @@
 import mongoose, { ConnectionStates } from "mongoose";
+import dotenv from "dotenv";
 
 export const connectToDb = async () => {
   console.log(mongoose.connection.readyState);
@@ -11,7 +12,7 @@ export const connectToDb = async () => {
     return;
   } else {
     mongoose
-      .connect(process.env.MONGODB_URL_SERVER ?? "")
+      .connect(process.env["MONGODB_URL"] ?? "")
       .then(() => {
         console.log("mangoDB Now connected");
       })

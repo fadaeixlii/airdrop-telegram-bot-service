@@ -1,6 +1,7 @@
 import Users, { IUser } from "../Models/Users";
 import { Ranks } from "../Models/Ranks";
-
+import UserState from "../Models/UserState";
+import TelegramBot, {SendMessageOptions} from "node-telegram-bot-api";
 export interface UserInfoAndScore {
   score: number;
   maxScore: number;
@@ -20,6 +21,43 @@ export interface UserInfoAndScore {
   
   return hashHex;
 }; */
+
+export async function addUserIfExist(telId: number, userName: string| undefined, firstName: string| undefined, lastName: string| undefined,referralId: string| null ) {
+  let user  = await Users.findOne({ telegramId: telId });
+  if(!user) {
+    const ranks = await Ranks.find({});
+    const rankBronze = ranks[0];
+    let newRefCode = `r_${telId}`;
+    user = await Users.create({
+      telegramId: telId,
+      username: userName,
+      firstName: firstName,
+      lastName: lastName,
+      rank: rankBronze,
+      referralCode: newRefCode,
+    });
+
+    if (referralId) {
+      const referringUser = await Users.findOne({ referralCode: referralId });
+      if (referringUser) {
+        //todo add to parent
+        //todo assing reward
+        await trackReferral(referringUser._id, telId);
+        await provideReferralRewards(referringUser._id);
+      }
+    }
+
+    const userState = await UserState.findOne({});
+    if (userState) {
+      userState.userCount += 1;
+      userState.newUsersIn24h += 1;
+      await userState.save();
+    } else {
+      await UserState.create({ totalScore: 0, userCount: 1, newUsersIn24h: 1 });
+    }
+  }
+  return user.id
+}
 
 export async function generateReferralCode(message: string) {
   // Encode the message as a Uint8Array
@@ -98,3 +136,21 @@ export async function giveRankReward(
   // If no rank matches the storedScore, return null or handle it accordingly
   return null;
 }
+
+export async function sendMessageToUser(
+    bot: TelegramBot,
+    userId: number,
+    msg: string,
+    options?: SendMessageOptions
+) {
+  await bot.sendMessage(userId,msg,options)
+}
+
+export function generateInviteMsg(code: string, makeCopiable: boolean = false): string {
+  let link = `\nhttps://t.me/DemoAirDropMegaWallet1_bot?start=${code}`;
+  if (makeCopiable) {
+    link = `\n<code>${link}</code>`;
+  }
+  return `Invite your friends and get bonuses for each invited friend!🎁\nYour referral link: ${link}`;
+}
+

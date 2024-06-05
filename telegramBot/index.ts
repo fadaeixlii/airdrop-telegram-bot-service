@@ -3,11 +3,12 @@ import { connectToDb } from "../utils/connectToDB";
 import Users from "../Models/Users";
 import { Ranks } from "../Models/Ranks";
 import {
+  addUserIfExist, generateInviteMsg,
   generateReferralCode,
-  provideReferralRewards,
+  provideReferralRewards, sendMessageToUser,
   trackReferral,
 } from "../utils/userUtils";
-import UserState from "../Models/UserState";
+
 const bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN ?? "", {
   polling: true,
 });
@@ -16,88 +17,57 @@ bot.onText(/\/invite/, async (msg) => {
   const userId = msg?.from?.id;
   if (userId == null) return;
   const referralCode = `r_${userId}`;
-  //generateReferralCode(String(userId)); // Implement this function to generate a unique code
 
   let user = await Users.findOne({ telegramId: userId });
 
   if (!user) {
     user = new Users({ telegramId: userId, referralCode });
     await user.save();
-  } else if (user.referralCode == null || user.referralCode == undefined) {
+  } else if (user.referralCode == null) {
     user = await Users.findOneAndUpdate(
       { telegramId: userId },
       { referralCode }
     );
   }
 
-  var iKeys = [];
-  iKeys.push([
-    {
-      text: "Share",
-      switch_inline_query: `Invite your friends and get bonuses for each invited friend!🎁\nYour referral link: https://t.me/DemoAirDropMegaWallet1_bot?start=${user?.referralCode}`,
-    },
-  ]);
-  bot.sendMessage(
-    msg.chat.id,
-    `\nInvite your friends and get bonuses for each invited friend!🎁\n\nYour referral link: <code>https://t.me/DemoAirDropMegaWallet1_bot?start=${user?.referralCode}</code>`,
-    { parse_mode: "HTML", reply_markup: { inline_keyboard: iKeys } }
-  );
+
+
+  await sendMessageToUser(
+      bot,
+      msg.chat.id,
+      generateInviteMsg(user?.referralCode ?? "", true),
+      {
+        parse_mode: "HTML",
+        reply_markup: {
+        inline_keyboard:
+            [[
+              {
+                text: "Share",
+                switch_inline_query: generateInviteMsg(user?.referralCode ?? ""),
+              },
+            ]]
+      }
+      }
+      );
+
 });
 
 bot.onText(/\/start(?:\s(.*))?/, async (msg, match) => {
   await connectToDb();
 
   const referralLink = match ? match[1] : null; // Extract referral code from the command if provided
-  const newUserTelegramId = msg.chat?.id;
 
-  const userId = msg?.from?.id;
-  let user = await Users.findOne({ telegramId: userId });
+  const { id, username, first_name, last_name } = msg.chat;
+  const user = await addUserIfExist(id,username, first_name, last_name, referralLink);
 
-  const pa = user?.parentReferral;
-  if (!user) {
-    let newRefCode = `r_${userId}`;
-    // generateReferralCode(String(userId));
-
-    const { id, username, first_name, last_name } = msg.chat;
-    console.log(id, username, first_name, last_name);
-    // Check if the user already exists
-
-    const ranks = await Ranks.find({});
-    const rankBronze = ranks[0];
-    Users.create({
-      telegramId: id,
-      username,
-      firstName: first_name,
-      lastName: last_name,
-      rank: rankBronze,
-      referralCode: newRefCode,
-    });
-
-    if (referralLink) {
-      const referringUser = await Users.findOne({ referralCode: referralLink });
-      if (referringUser) {
-        //todo add to parent
-        //todo assing reward
-        await trackReferral(referringUser._id, newUserTelegramId);
-        await provideReferralRewards(referringUser._id);
-      }
-    }
-  }
-
-  const userState = await UserState.findOne({});
-  if (userState) {
-    userState.userCount += 1;
-    userState.newUsersIn24h += 1;
-    await userState.save();
-  } else {
-    await UserState.create({ totalScore: 0, userCount: 1, newUsersIn24h: 1 });
-  }
-
-  bot.sendMessage(
-    msg.chat.id,
-    `Hello ${msg.from?.username}👋\n\n This is DEMO_WALLET\n\nTap And earn Coin.A little bit later you will be very surprised.\n\nGot friends? Invite them to the game. That’s the way you'll both earn even more coins together.\n\nThat’s all you need to know to get started.`
+  await sendMessageToUser(
+      bot,
+      msg.chat.id,
+      `Hello ${msg.from?.username}👋\n\n This is DEMO_WALLET\n\nTap And earn Coin.A little bit later you will be very surprised.\n\nGot friends? Invite them to the game. That’s the way you'll both earn even more coins together.\n\nThat’s all you need to know to get started.`
   );
+
 });
 
 // Start the bot
 bot.on("polling_error", (error) => console.error(error));
+
