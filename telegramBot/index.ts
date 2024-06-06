@@ -1,12 +1,9 @@
 import TelegramBot from "node-telegram-bot-api";
 import { connectToDb } from "../utils/connectToDB";
 import Users from "../Models/Users";
-import { Ranks } from "../Models/Ranks";
 import {
   addUserIfExist, generateInviteMsg,
-  generateReferralCode,
-  provideReferralRewards, sendMessageToUser,
-  trackReferral,
+   sendMessageToUser,
 } from "../utils/userUtils";
 
 const bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN ?? "", {
@@ -30,7 +27,12 @@ bot.onText(/\/invite/, async (msg) => {
     );
   }
 
-
+    const a = [[
+        {
+            text: "Share",
+            switch_inline_query: generateInviteMsg(user?.referralCode ?? ""),
+        },
+    ]]
 
   await sendMessageToUser(
       bot,
@@ -63,7 +65,18 @@ bot.onText(/\/start(?:\s(.*))?/, async (msg, match) => {
   await sendMessageToUser(
       bot,
       msg.chat.id,
-      `Hello ${msg.from?.username}👋\n\n This is DEMO_WALLET\n\nTap And earn Coin.A little bit later you will be very surprised.\n\nGot friends? Invite them to the game. That’s the way you'll both earn even more coins together.\n\nThat’s all you need to know to get started.`
+      `Hello ${msg.from?.username}👋\n\n This is DEMO_WALLET\n\nTap And earn Coin.A little bit later you will be very surprised.\n\nGot friends? Invite them to the game. That’s the way you'll both earn even more coins together.\n\nThat’s all you need to know to get started.`,
+      {
+            reply_markup: {
+        inline_keyboard:
+            [[
+                {
+                    text: "Play",
+                    url: "https://t.me/DemoAirDropMegaWallet1_bot/Opalifi"
+                },
+            ]]
+    }
+    }
   );
 
 });
