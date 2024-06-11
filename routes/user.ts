@@ -3,6 +3,7 @@ import Users, { IUser } from "./../Models/Users";
 import Robots, { IRobot } from "../Models/Robots";
 import { isMongoConnected } from "../utils/connectToDB";
 import { IRanks } from "../Models/Ranks";
+import { addUserIfExist } from "../utils/userUtils";
 
 const router = express.Router();
 
@@ -16,9 +17,12 @@ router.use((req, res, next) => {
 });
 
 export const getUserId = router.get(
-  "/user/telegram/:telegramId",
+  "/user/telegram/:telegramId/:username/:first_name/:last_name",
   async (req, res) => {
     const telegramId = parseInt(req.params.telegramId, 10);
+    const username = req.params.username;
+    const first_name = req.params.first_name;
+    const last_name = req.params.last_name;
 
     if (isNaN(telegramId)) {
       return res
@@ -27,8 +31,16 @@ export const getUserId = router.get(
     }
 
     try {
-      const user = await Users.findOne({ telegramId: +req.params.telegramId });
-
+      let user = await Users.findOne({ telegramId: +req.params.telegramId });
+      if (!user) {
+        user = await addUserIfExist(
+          telegramId,
+          username,
+          first_name,
+          last_name,
+          null
+        );
+      }
       if (!user) {
         return res
           .status(404)
