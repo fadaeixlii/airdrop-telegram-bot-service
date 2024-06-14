@@ -118,19 +118,11 @@ export const verifyTask = router.post("/verify-task", async (req, res) => {
       const channelId = miniTask.channelId; // Assuming link is the Telegram channel ID
       isCompleted = await checkTelegramSubscription(
         user.telegramId,
-        // channelId ?? "2152067180"
-        "-1002220222037"
+        channelId ?? ""
       );
     }
 
-    // Add other mini-task types verification here if needed
-
     if (isCompleted) {
-      // if (!user.completedTasks.includes(taskId)) {
-      //   user.completedTasks.push(taskId);
-      //   await user.save();
-      // }
-
       return res
         .status(200)
         .json({ success: true, message: "Mini-task completed" });
