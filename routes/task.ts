@@ -1,6 +1,7 @@
 import express from "express";
 import Tasks from "../Models/Task";
 import Users from "../Models/Users";
+import { checkTelegramSubscription } from "../utils/taskUtil";
 
 const router = express.Router();
 
@@ -32,6 +33,9 @@ export const getUserTasks = router.get("/tasks/:userId", async (req, res) => {
         title: miniTask.title,
         image: miniTask.image,
         link: miniTask.link,
+        channelId: miniTask.channelId,
+        id: miniTask._id,
+        type: miniTask.type,
         isCompleted: completedTaskIds.has(task._id.toString()),
       })),
     }));
@@ -82,3 +86,61 @@ export const completeTask = router.post(
     }
   }
 );
+
+export const verifyTask = router.post("/verify-task", async (req, res) => {
+  const { userId, taskId, miniTaskIndex } = req.body;
+
+  try {
+    const user = await Users.findById(userId);
+    if (!user) {
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found" });
+    }
+
+    const task = await Tasks.findById(taskId);
+    if (!task) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Task not found" });
+    }
+
+    const miniTask = task.miniTasks[miniTaskIndex];
+    if (!miniTask) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Mini-task not found" });
+    }
+
+    let isCompleted = false;
+
+    if (miniTask.type === "telegram") {
+      const channelId = miniTask.channelId; // Assuming link is the Telegram channel ID
+      isCompleted = await checkTelegramSubscription(
+        user.telegramId,
+        // channelId ?? "2152067180"
+        "-1002220222037"
+      );
+    }
+
+    // Add other mini-task types verification here if needed
+
+    if (isCompleted) {
+      // if (!user.completedTasks.includes(taskId)) {
+      //   user.completedTasks.push(taskId);
+      //   await user.save();
+      // }
+
+      return res
+        .status(200)
+        .json({ success: true, message: "Mini-task completed" });
+    } else {
+      return res
+        .status(403)
+        .json({ success: false, message: "Mini-task not completed" });
+    }
+  } catch (error) {
+    console.error("Error verifying task:", error);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+});

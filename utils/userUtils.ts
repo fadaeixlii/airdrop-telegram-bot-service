@@ -134,17 +134,23 @@ export const provideReferralRewards = async (
 
 export async function giveRankReward(
   storedScore: number
-): Promise<[number, number] | null> {
+): Promise<[number, number, number] | null> {
   const ranks = await Ranks.find({});
-
+  let rewardFromRank = 0;
   for (const itRank of ranks) {
+    console.log("rewardFromRank", rewardFromRank);
     if (storedScore >= itRank.minScore && storedScore < itRank.maxScore) {
-      return [storedScore + itRank.reward, itRank.maxScore];
-    }
+      rewardFromRank += itRank.reward;
+      return [storedScore + itRank.reward, itRank.maxScore, rewardFromRank];
+    } else rewardFromRank += itRank.reward;
   }
 
   // If no rank matches the storedScore, return null or handle it accordingly
-  return null;
+  return [
+    storedScore + ranks[ranks.length - 1].reward,
+    ranks[ranks.length - 1].maxScore,
+    rewardFromRank,
+  ];
 }
 
 export async function sendMessageToUser(

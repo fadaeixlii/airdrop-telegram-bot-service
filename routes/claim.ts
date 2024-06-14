@@ -84,6 +84,7 @@ export const claimRoute = router.post("/claim", async (req, res) => {
       nextRankScore: newNextRankScore,
       lastClaimTimestamp: newClaimTime,
       robotTimeRemain: robotRemain, // Ensure non-negative value
+      rewardFromRank: result ? result[2] : 0,
     });
 
     const parentRef = user.parentReferral;

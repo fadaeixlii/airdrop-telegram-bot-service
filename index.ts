@@ -19,7 +19,7 @@ import "./telegramBot/index";
 import { rankRoute } from "./routes/rank";
 import UserState from "./Models/UserState";
 import { getProfileImage } from "./routes/profileImage";
-import { completeTask, getUserTasks } from "./routes/task";
+import { completeTask, getUserTasks, verifyTask } from "./routes/task";
 
 const app = express();
 // const server = http.createServer(app);
@@ -37,6 +37,7 @@ app.use(purchaseBoostRoute);
 app.use(getProfileImage);
 app.use(getUserTasks);
 app.use(completeTask);
+app.use(verifyTask);
 
 app.listen(process.env.PORT ?? "7002", async () => {
   await connectToDb();

@@ -16,13 +16,13 @@ router.use((req, res, next) => {
   }
 });
 
-export const getUserId = router.get(
-  "/user/telegram/:telegramId/:username/:first_name/:last_name",
+export const getUserId = router.post(
+  "/user/telegram/:telegramId",
   async (req, res) => {
     const telegramId = parseInt(req.params.telegramId, 10);
-    const username = req.params.username;
-    const first_name = req.params.first_name;
-    const last_name = req.params.last_name;
+    const username = req.body.username;
+    const first_name = req.body.first_name;
+    const last_name = req.body.last_name;
 
     if (isNaN(telegramId)) {
       return res
@@ -40,11 +40,6 @@ export const getUserId = router.get(
           last_name,
           null
         );
-      }
-      if (!user) {
-        return res
-          .status(404)
-          .json({ success: false, message: "User not found" });
       }
 
       res.status(200).json({
