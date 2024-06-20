@@ -14,8 +14,8 @@ export const connectToDb = async () => {
     mongoose
       .connect(
         process.env.MONGODB_URL_SERVER ??
-          "mongodb://userMega:LPmCvJtcWmZo@89.106.206.59:27017/demo_airdrop"
-        // "mongodb://userMega:USER)(Mega123!@107.189.16.134:27017/demo_airdrop"
+          // "mongodb://userMega:LPmCvJtcWmZo@89.106.206.59:27017/demo_airdrop"
+          "mongodb://userMega:USER)(Mega123!@107.189.16.134:27017/demo_airdrop"
       )
       .then(() => {
         console.log("mangoDB Now connected");
