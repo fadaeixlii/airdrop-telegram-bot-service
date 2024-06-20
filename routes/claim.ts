@@ -1,8 +1,9 @@
 import express from "express";
-import Users from "../Models/Users";
+import Users, { IUser } from "../Models/Users";
 import { isMongoConnected } from "../utils/connectToDB";
 import { giveRankReward } from "../utils/userUtils";
 import UserState from "../Models/UserState";
+import Ranks, { IRanks } from "../Models/Ranks";
 
 const router = express.Router();
 
@@ -35,64 +36,51 @@ export const claimRoute = router.post("/claim", async (req, res) => {
       );
     }
 
-    let numClaims = 1; // Default 1 claim
-    if (
-      user.lastClaimTimestamp &&
-      Date.now() - user.lastClaimTimestamp.getTime() >
-        user.timeLimit * 60 * 1000
-    ) {
-      const elapsedMinutes = Math.floor(
-        (Date.now() - user.lastClaimTimestamp.getTime()) /
-          (user.timeLimit * 60 * 1000)
-      );
-
-      numClaims = Math.min(
-        user.robotTimeRemain + 1,
-        Math.floor(elapsedMinutes)
-      );
-    }
-
-    if (user.robotTimeRemain > 0) numClaims++;
-
     const { storedScore, maxScore } = user;
-    let newStoredScore = storedScore + numClaims * maxScore;
+    let newStoredScore = storedScore + maxScore;
+    user.storedScore = newStoredScore;
+    user.save();
     let newNextRankScore = user.nextRankScore;
-    console.log("numClaims", numClaims);
     console.log("newStoredScore", newStoredScore);
     console.log("storedScore", storedScore);
     console.log("maxScore", maxScore);
 
-    const result = await giveRankReward(newStoredScore);
+    const ranks: IRanks[] = await Ranks.find({
+      minScore: { $lte: user.storedScore },
+      maxScore: { $gte: user.storedScore },
+    });
+    for (const rank of ranks) {
+      if (!user.claimedRanks.includes(rank._id)) {
+        // Award the user
+        const reward = rank.maxScore * 0.1;
+        user.storedScore += reward;
+        user.rewardFromRank += reward;
 
-    if (result) {
-      newStoredScore = result[0];
-      newNextRankScore = result[1];
+        // Award the parent referral
+        if (user.parentReferral) {
+          const parent: IUser | null = await Users.findById(
+            user.parentReferral
+          );
+          if (parent) {
+            const parentReward = reward * 0.025;
+            parent.storedScore += parentReward;
+            await parent.save();
+          }
+        }
+
+        // Mark the rank as claimed
+        user.claimedRanks.push(rank._id);
+        await user.save();
+      }
     }
 
-    console.log("result", result);
     console.log("newStoredScore", newStoredScore);
     console.log("newNextRankScore", newNextRankScore);
 
-    let robotRemain = 0;
-    if (user.robotTimeRemain > 0) {
-      robotRemain = user.robotTimeRemain - (numClaims - 1);
-    }
-
     const newClaimTime = new Date();
     await user.updateOne({
-      storedScore: newStoredScore,
-      nextRankScore: newNextRankScore,
       lastClaimTimestamp: newClaimTime,
-      robotTimeRemain: robotRemain, // Ensure non-negative value
-      rewardFromRank: result ? result[2] : 0,
     });
-
-    const parentRef = user.parentReferral;
-    if (parentRef) {
-      const parentUser = await Users.findById(parentRef);
-      if (parentUser) parentUser.storedScore += numClaims * maxScore * 0.2;
-      parentUser?.save();
-    }
 
     const userState = await UserState.findOne({});
     if (userState) {

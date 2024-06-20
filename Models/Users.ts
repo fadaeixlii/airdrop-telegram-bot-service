@@ -29,6 +29,7 @@ export interface IUser extends mongoose.Document {
   profitPerHour: number;
   rewardFromRank: number;
   lastTimeCallApi: Date;
+  claimedRanks: mongoose.Types.ObjectId[];
 }
 
 const userSchema = new Schema<IUser>({
@@ -54,7 +55,7 @@ const userSchema = new Schema<IUser>({
   },
   maxScore: {
     type: Number,
-    default: defaultNumber("MAX_SCORE_DEFAULT", 100),
+    default: 100,
   },
   storedScore: {
     type: Number,
@@ -75,15 +76,15 @@ const userSchema = new Schema<IUser>({
   lastClaimTimestamp: Date,
   timeLimit: {
     type: Number,
-    default: defaultNumber("TIME_LIMIT_DEFAULT", 10),
+    default: 480,
   },
   userMaxScorePrice: {
     type: Number,
-    default: defaultNumber("USER_MAX_SCORE_PRICE_DEFAULT", 100),
+    default: 80,
   },
   userTimeLimitPrice: {
     type: Number,
-    default: defaultNumber("USER_TIME_LIMIT_PRICE_DEFAULT", 100),
+    default: 80,
   },
   maxScoreMaxBoostCount: {
     type: Number,
@@ -95,7 +96,7 @@ const userSchema = new Schema<IUser>({
   },
   nextRankScore: {
     type: Number,
-    default: 100,
+    default: 1000,
   },
   completedTasks: [{ type: Schema.Types.ObjectId, ref: "Tasks" }],
   profitPerHour: {
@@ -110,6 +111,13 @@ const userSchema = new Schema<IUser>({
     type: Date,
     default: Date.now,
   },
+  claimedRanks: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Ranks",
+      default: [],
+    },
+  ],
 });
 
 const Users = mongoose.model<IUser>("Users", userSchema);
