@@ -180,7 +180,7 @@ export const purchaseBoostRoute = router.post(
       } else if (boostType === "timeLimit") {
         if (user.timeLimitMaxBoostCount <= 0)
           return res.sendError(401, "You Have Reached Maximum");
-        const n = user.timeLimitMaxBoostCount;
+        const n = 21 - user.timeLimitMaxBoostCount;
         user.timeLimitMaxBoostCount--;
 
         boostPrice = parseInt(user.userTimeLimitPrice.toFixed(0));

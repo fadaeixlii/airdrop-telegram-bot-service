@@ -39,7 +39,7 @@ export const claimRoute = router.post("/claim", async (req, res) => {
     const { storedScore, maxScore } = user;
     let newStoredScore = storedScore + maxScore;
     user.storedScore = newStoredScore;
-    user.save();
+    await user.save();
     let newNextRankScore = user.nextRankScore;
     console.log("newStoredScore", newStoredScore);
     console.log("storedScore", storedScore);
