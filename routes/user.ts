@@ -172,21 +172,20 @@ export const purchaseBoostRoute = router.post(
       if (boostType === "maxScore") {
         if (user.maxScoreMaxBoostCount <= 0)
           return res.sendError(401, "You Have Reached Maximum");
-        const n = user.maxScoreMaxBoostCount;
+        const n = 21 - user.maxScoreMaxBoostCount;
         user.maxScoreMaxBoostCount--;
         boostPrice = parseInt(user.userMaxScorePrice.toFixed(0));
         boostEffect = 10; // Increase maxScore by 5
-        user.userMaxScorePrice = Math.ceil((80 * Math.pow(1.2, n - 1)) / 5) * 5;
+        user.userMaxScorePrice = Math.ceil((80 * Math.pow(1.2, n)) / 5) * 5;
       } else if (boostType === "timeLimit") {
         if (user.timeLimitMaxBoostCount <= 0)
           return res.sendError(401, "You Have Reached Maximum");
-        const n = 20 - user.timeLimitMaxBoostCount;
+        const n = 21 - user.timeLimitMaxBoostCount;
         user.timeLimitMaxBoostCount--;
 
         boostPrice = parseInt(user.userTimeLimitPrice.toFixed(0));
         boostEffect = -6; // Increase maxScore by 5
-        user.userTimeLimitPrice =
-          Math.ceil((80 * Math.pow(1.2, n - 1)) / 5) * 5;
+        user.userTimeLimitPrice = Math.ceil((80 * Math.pow(1.2, n)) / 5) * 5;
       } else {
         return res.sendError(400, "Invalid boost type");
       }
