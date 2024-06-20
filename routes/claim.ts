@@ -43,16 +43,23 @@ export const claimRoute = router.post("/claim", async (req, res) => {
     let newNextRankScore = user.nextRankScore;
     console.log("newStoredScore", newStoredScore);
     console.log("storedScore", storedScore);
+    console.log("storedScore user", user.storedScore);
     console.log("maxScore", maxScore);
 
     const ranks: IRanks[] = await Ranks.find({
-      minScore: { $lte: user.storedScore },
-      maxScore: { $gte: user.storedScore },
+      maxScore: { $lte: user.storedScore },
     });
-    for (const rank of ranks) {
-      if (!user.claimedRanks.includes(rank._id)) {
+
+    if (ranks.length > 0) {
+      // Find the highest rank the user qualifies for
+      const highestRank = ranks.reduce((prev, current) =>
+        prev.maxScore > current.maxScore ? prev : current
+      );
+
+      // Check if the user has already claimed this rank
+      if (!user.claimedRanks.includes(highestRank._id)) {
         // Award the user
-        const reward = rank.maxScore * 0.1;
+        const reward = highestRank.maxScore * 0.1;
         user.storedScore += reward;
         user.rewardFromRank += reward;
 
@@ -69,7 +76,7 @@ export const claimRoute = router.post("/claim", async (req, res) => {
         }
 
         // Mark the rank as claimed
-        user.claimedRanks.push(rank._id);
+        user.claimedRanks.push(highestRank._id);
         await user.save();
       }
     }
