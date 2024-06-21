@@ -20,7 +20,7 @@ export interface IUser extends mongoose.Document {
   robotTimeRemain: number;
   storedScore: number;
   referralCode?: string;
-  lastClaimTimestamp?: Date;
+  lastClaimTimestamp?: number;
   timeLimit: number;
   nextRankScore: number;
   maxScoreMaxBoostCount: number;
@@ -28,7 +28,7 @@ export interface IUser extends mongoose.Document {
   completedTasks: mongoose.Types.ObjectId[];
   profitPerHour: number;
   rewardFromRank: number;
-  lastTimeCallApi: Date;
+  lastTimeCallApi: number;
   claimedRanks: mongoose.Types.ObjectId[];
 }
 
@@ -73,7 +73,7 @@ const userSchema = new Schema<IUser>({
     type: Number,
     default: 0,
   },
-  lastClaimTimestamp: Date,
+  lastClaimTimestamp: Number,
   timeLimit: {
     type: Number,
     default: 480,
@@ -108,8 +108,8 @@ const userSchema = new Schema<IUser>({
     default: 0,
   },
   lastTimeCallApi: {
-    type: Date,
-    default: Date.now,
+    type: Number,
+    default: new Date().getTime(),
   },
   claimedRanks: [
     {

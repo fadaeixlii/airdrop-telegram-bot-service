@@ -75,17 +75,16 @@ export const userInfoRoute = router.get("/user/:userId", async (req, res) => {
 
     if (user.profitPerHour > 0 && user.lastTimeCallApi) {
       const elapsedTime =
-        (NowDate.getTime() - user.lastTimeCallApi.getTime()) / (1000 * 60 * 60); // elapsed time in hours
+        (NowDate.getTime() - user.lastTimeCallApi) / (1000 * 60 * 60); // elapsed time in hours
       user.storedScore += user.profitPerHour * elapsedTime;
     }
 
-    user.lastTimeCallApi = NowDate;
+    user.lastTimeCallApi = NowDate.getTime();
     await user.save();
 
     const canClaim = !(
       user.lastClaimTimestamp &&
-      NowDate.getTime() - user.lastClaimTimestamp.getTime() <
-        user.timeLimit * 60 * 1000
+      NowDate.getTime() - user.lastClaimTimestamp < user.timeLimit * 60 * 1000
     );
     const userData = {
       telegramId: user.telegramId,

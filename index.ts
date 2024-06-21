@@ -51,7 +51,7 @@ cron.schedule("0 0 * * *", async () => {
     const userState = await UserState.findOne({});
     if (userState) {
       userState.newUsersIn24h = 0;
-      userState.lastUpdated = new Date();
+      userState.lastUpdated = new Date().getTime();
       await userState.save();
     } else {
       await UserState.create({ totalScore: 0, userCount: 0, newUsersIn24h: 0 });

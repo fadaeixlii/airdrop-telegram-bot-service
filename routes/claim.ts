@@ -27,8 +27,7 @@ export const claimRoute = router.post("/claim", async (req, res) => {
     }
     if (
       user.lastClaimTimestamp &&
-      Date.now() - user.lastClaimTimestamp.getTime() <
-        user.timeLimit * 60 * 1000
+      Date.now() - user.lastClaimTimestamp < user.timeLimit * 60 * 1000
     ) {
       return res.sendError(
         403,
@@ -103,7 +102,7 @@ export const claimRoute = router.post("/claim", async (req, res) => {
 
     res.sendSuccess(200, "Claim Successfull", {
       newStoredScore: newStoredScore,
-      lastClaimTimestamp: newClaimTime,
+      lastClaimTimestamp: newClaimTime.getTime(),
     });
   } catch (error) {
     console.error("Error processing claim:", error);

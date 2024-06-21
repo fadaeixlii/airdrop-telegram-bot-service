@@ -4,7 +4,7 @@ export interface UserState extends Document {
   totalScore: number;
   userCount: number;
   newUsersIn24h: number;
-  lastUpdated: Date;
+  lastUpdated: number;
 }
 
 const userStateSchema = new Schema<UserState>({
@@ -21,8 +21,7 @@ const userStateSchema = new Schema<UserState>({
     default: 0,
   },
   lastUpdated: {
-    type: Date,
-    default: Date.now,
+    type: Number,
   },
 });
 
