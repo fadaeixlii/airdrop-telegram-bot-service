@@ -7,7 +7,7 @@ import {
   sendMessageToUser,
 } from "../utils/userUtils";
 
-export const bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN ?? "", {
+export const bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN2 ?? "", {
   polling: true,
 });
 

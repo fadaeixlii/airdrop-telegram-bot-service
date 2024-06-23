@@ -30,6 +30,9 @@ export interface IUser extends mongoose.Document {
   rewardFromRank: number;
   lastTimeCallApi: number;
   claimedRanks: mongoose.Types.ObjectId[];
+  referralRewardClaimed: mongoose.Types.ObjectId[];
+  claimedTimeLimitBoosts: mongoose.Types.ObjectId[];
+  claimedMaxScoreBoosts: mongoose.Types.ObjectId[];
 }
 
 const userSchema = new Schema<IUser>({
@@ -116,6 +119,24 @@ const userSchema = new Schema<IUser>({
       type: mongoose.Schema.Types.ObjectId,
       ref: "Ranks",
       default: [],
+    },
+  ],
+  referralRewardClaimed: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: "ReferralRewards",
+    },
+  ],
+  claimedTimeLimitBoosts: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "TimeLimitBoosts",
+    },
+  ],
+  claimedMaxScoreBoosts: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "MaxScoreBoosts",
     },
   ],
 });

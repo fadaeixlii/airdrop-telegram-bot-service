@@ -39,49 +39,12 @@ export const claimRoute = router.post("/claim", async (req, res) => {
     let newStoredScore = storedScore + maxScore;
     user.storedScore = newStoredScore;
     await user.save();
-    let newNextRankScore = user.nextRankScore;
-    console.log("newStoredScore", newStoredScore);
-    console.log("storedScore", storedScore);
-    console.log("storedScore user", user.storedScore);
-    console.log("maxScore", maxScore);
 
-    const ranks: IRanks[] = await Ranks.find({
-      maxScore: { $lte: user.storedScore },
-    });
-
-    if (ranks.length > 0) {
-      // Find the highest rank the user qualifies for
-      const highestRank = ranks.reduce((prev, current) =>
-        prev.maxScore > current.maxScore ? prev : current
-      );
-
-      // Check if the user has already claimed this rank
-      if (!user.claimedRanks.includes(highestRank._id)) {
-        // Award the user
-        const reward = highestRank.maxScore * 0.1;
-        user.storedScore += reward;
-        user.rewardFromRank += reward;
-
-        // Award the parent referral
-        if (user.parentReferral) {
-          const parent: IUser | null = await Users.findById(
-            user.parentReferral
-          );
-          if (parent) {
-            const parentReward = reward * 0.025;
-            parent.storedScore += parentReward;
-            await parent.save();
-          }
-        }
-
-        // Mark the rank as claimed
-        user.claimedRanks.push(highestRank._id);
-        await user.save();
-      }
+    const parentUser = await Users.findById(user.parentReferral);
+    if (parentUser) {
+      parentUser.storedScore += maxScore / 5;
+      user.rewardFromRank += maxScore / 5;
     }
-
-    console.log("newStoredScore", newStoredScore);
-    console.log("newNextRankScore", newNextRankScore);
 
     const newClaimTime = new Date();
     await user.updateOne({

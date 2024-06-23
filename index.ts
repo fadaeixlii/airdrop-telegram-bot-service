@@ -21,6 +21,12 @@ import UserState from "./Models/UserState";
 import { getProfileImage } from "./routes/profileImage";
 import { completeTask, getUserTasks, verifyTask } from "./routes/task";
 import { check } from "./utils/taskUtil";
+import { claimRank, rankList } from "./routes/ranks";
+import {
+  claimReferralReward,
+  unclaimedReferralReward,
+} from "./routes/referral";
+import { availableBoost, purchaseBoost } from "./routes/boost";
 
 const app = express();
 // const server = http.createServer(app);
@@ -40,6 +46,12 @@ app.use(getUserTasks);
 app.use(completeTask);
 app.use(verifyTask);
 app.use(check);
+app.use(claimRank);
+app.use(rankList);
+app.use(claimReferralReward);
+app.use(unclaimedReferralReward);
+app.use(purchaseBoost);
+app.use(availableBoost);
 
 app.listen(process.env.PORT ?? "7002", async () => {
   await connectToDb();
