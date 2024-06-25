@@ -92,7 +92,7 @@ bot.onText(/\/start(?:\s(.*))?/, async (msg, match) => {
           [
             {
               text: "Play",
-              url: "https://t.me/OpaliFibot/myapp",
+              url: "https://t.me/OpaliFibot/OpaliFiApp",
             },
           ],
           [
