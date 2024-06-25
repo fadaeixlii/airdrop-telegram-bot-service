@@ -7,9 +7,12 @@ import {
   sendMessageToUser,
 } from "../utils/userUtils";
 
-export const bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN ?? "", {
-  polling: true,
-});
+export const bot = new TelegramBot(
+  "7364074459:AAFd_etj17SEEEIi980Ux-oJvlSSaTLQA3Q",
+  {
+    polling: true,
+  }
+);
 
 bot.onText(/\/invite/, async (msg) => {
   const userId = msg?.from?.id;
@@ -74,14 +77,28 @@ bot.onText(/\/start(?:\s(.*))?/, async (msg, match) => {
   await sendMessageToUser(
     bot,
     msg.chat.id,
-    `Hello ${msg.from?.username}👋\n\n This is DEMO_WALLET\n\nTap And earn Coin.A little bit later you will be very surprised.\n\nGot friends? Invite them to the game. That’s the way you'll both earn even more coins together.\n\nThat’s all you need to know to get started.`,
+    `Hey ${msg.from?.username}! 🌟 Discover OpaliFi – your ultimate hub for seamless digital asset management! 🚀
+
+    With OpaliFi's Mega Wallet, you can trade, invest, and grow without the hassle of moving your assets around. Whether it's DeFi, CeFi, or the latest investment opportunities, it's all right at your fingertips. 📱
+    
+    Exciting news! 🎉 Start earning points by participating and be ready to unlock amazing rewards. Who knows what treasures await you with your points! 💰
+    
+    Got friends? Bring them along! The more, the merrier! 🌱 Let’s grow together and make the most out of every opportunity with OpaliFi.
+    
+    Join us and experience where seamless finance meets endless possibilities! 🌟`,
     {
       reply_markup: {
         inline_keyboard: [
           [
             {
               text: "Play",
-              url: "https://t.me/DemoAirDropMegaWallet1_bot/Opalifi",
+              url: "https://t.me/OpaliFibot/myapp",
+            },
+          ],
+          [
+            {
+              text: "Join community",
+              url: "t.me/OpaliFi",
             },
           ],
         ],

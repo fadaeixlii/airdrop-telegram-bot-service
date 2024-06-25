@@ -50,7 +50,7 @@ export async function addUserIfExist(
         //todo assing reward
         await trackReferral(referringUser._id, telId);
         await provideReferralRewards(referringUser._id);
-        user.storedScore += 500;
+        user.storedScore += 200;
         await user.save();
       }
     }
@@ -121,7 +121,7 @@ export const provideReferralRewards = async (
       // Update the referring user's score or provide rewards as needed
       // Example: await Users.findByIdAndUpdate(referringUserId, { $inc: { score: 10 } });
       console.log(`Referral rewards provided to user: ${referringUserId}`);
-      referringUser.storedScore += 500;
+      referringUser.storedScore += 200;
       await referringUser.save();
     } else {
       console.error("Referring user not found.");
