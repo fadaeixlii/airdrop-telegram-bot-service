@@ -120,6 +120,10 @@ export const verifyTask = router.post("/verify-task", async (req, res) => {
         user.telegramId,
         channelId ?? ""
       );
+    } else {
+      return res
+        .status(200)
+        .json({ success: true, message: "Mini-task completed" });
     }
 
     if (isCompleted) {
