@@ -38,13 +38,14 @@ export const claimRoute = router.post("/claim", async (req, res) => {
     const { storedScore, maxScore } = user;
     let newStoredScore = storedScore + maxScore;
     user.storedScore = newStoredScore;
-    await user.save();
 
     const parentUser = await Users.findById(user.parentReferral);
     if (parentUser) {
       parentUser.storedScore += maxScore / 5;
       user.rewardFromRank += maxScore / 5;
+      await parentUser?.save();
     }
+    await user.save();
 
     const newClaimTime = new Date();
     await user.updateOne({
