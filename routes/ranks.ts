@@ -53,9 +53,7 @@ export const rankList = router.get("/rank-list/:userId", async (req, res) => {
     const ranks: IRanks[] = await Ranks.find().sort({ maxScore: 1 });
 
     // Filter out the ranks that the user has already claimed
-    const unclaimedRanks = ranks.filter(
-      (rank) => !user.claimedRanks.includes(rank._id)
-    );
+    const unclaimedRanks = [...ranks];
 
     // Send the filtered ranks in the response
     res.status(200).send(
@@ -65,6 +63,7 @@ export const rankList = router.get("/rank-list/:userId", async (req, res) => {
         maxScore: unClaimed.maxScore,
         reward: unClaimed.reward,
         id: unClaimed._id,
+        isCompleted: user.claimedRanks.includes(unClaimed._id),
       }))
     );
   } catch (error) {

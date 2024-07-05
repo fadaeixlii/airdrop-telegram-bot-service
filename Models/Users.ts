@@ -33,6 +33,8 @@ export interface IUser extends mongoose.Document {
   referralRewardClaimed: mongoose.Types.ObjectId[];
   claimedTimeLimitBoosts: mongoose.Types.ObjectId[];
   claimedMaxScoreBoosts: mongoose.Types.ObjectId[];
+  claimCount: number;
+  collectedTon: number;
 }
 
 const userSchema = new Schema<IUser>({
@@ -139,6 +141,14 @@ const userSchema = new Schema<IUser>({
       ref: "MaxScoreBoosts",
     },
   ],
+  claimCount: {
+    type: Number,
+    default: 0,
+  },
+  collectedTon: {
+    type: Number,
+    default: 0,
+  },
 });
 
 const Users = mongoose.model<IUser>("Users", userSchema);

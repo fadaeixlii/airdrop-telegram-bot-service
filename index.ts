@@ -27,6 +27,7 @@ import {
   unclaimedReferralReward,
 } from "./routes/referral";
 import { availableBoost, purchaseBoost } from "./routes/boost";
+import { topUserPerRank } from "./routes/userRanks";
 
 const app = express();
 // const server = http.createServer(app);
@@ -52,6 +53,7 @@ app.use(claimReferralReward);
 app.use(unclaimedReferralReward);
 app.use(purchaseBoost);
 app.use(availableBoost);
+app.use(topUserPerRank);
 
 app.listen(process.env.PORT ?? "7002", async () => {
   await connectToDb();

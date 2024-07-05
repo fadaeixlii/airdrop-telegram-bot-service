@@ -1,9 +1,7 @@
 import express from "express";
-import Users, { IUser } from "../Models/Users";
+import Users from "../Models/Users";
 import { isMongoConnected } from "../utils/connectToDB";
-import { giveRankReward } from "../utils/userUtils";
 import UserState from "../Models/UserState";
-import Ranks, { IRanks } from "../Models/Ranks";
 
 const router = express.Router();
 
@@ -38,9 +36,13 @@ export const claimRoute = router.post("/claim", async (req, res) => {
     const { storedScore, maxScore } = user;
     let newStoredScore = storedScore + maxScore;
     user.storedScore = newStoredScore;
+    user.claimCount++;
 
     const parentUser = await Users.findById(user.parentReferral);
     if (parentUser) {
+      if (user.claimCount === 2) {
+        parentUser.collectedTon += 0.001;
+      }
       parentUser.storedScore += maxScore / 5;
       user.rewardFromRank += maxScore / 5;
       await parentUser?.save();

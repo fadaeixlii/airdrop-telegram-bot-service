@@ -18,13 +18,16 @@ const updateUsersAndSendMessage = async () => {
 
     for (const user of users) {
       if (user.storedScore > 0) {
-        user.storedScore += 1000000;
-        await user.save();
+        try {
+          user.storedScore += 1000000;
+          await user.save();
 
-        const message = `Congratulations 🎉 
+          const message = `Congratulations 🎉 
         you have won a million OPA, you can check your balance inside the robot`;
-        await bot.sendMessage(user.telegramId, message);
-
+          await bot.sendMessage(user.telegramId, message);
+        } catch (error) {
+          console.log(error);
+        }
         console.log(`Updated and notified user ${user.telegramId}`);
       }
     }

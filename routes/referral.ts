@@ -82,9 +82,7 @@ export const unclaimedReferralReward = router.get(
       const claimedRewards = user.referralRewardClaimed;
       const userReferralsCount = user.referrals.length;
 
-      const unclaimedRewards = allRewards.filter(
-        (reward) => !claimedRewards.includes(reward._id)
-      );
+      const unclaimedRewards = [...allRewards];
 
       res.status(200).json({
         success: true,
@@ -93,6 +91,7 @@ export const unclaimedReferralReward = router.get(
           rewardValue: unclaimedRef.rewardValue,
           referralsNeeded: unclaimedRef.referralsNeeded,
           id: unclaimedRef._id,
+          isCompleted: claimedRewards.includes(unclaimedRef._id),
         })),
       });
     } catch (error) {
